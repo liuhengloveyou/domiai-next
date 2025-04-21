@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 
+// 添加这一行来启用动态渲染
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'VoiceCanvas Studio - Professional AI Voice Synthesis & Voice Cloning Workspace',
   description: 'Create professional-grade voice content with our advanced AI voice synthesis and cloning studio. Features real-time preview, multi-voice support, precise control over speed, pitch, and personalized voice cloning capabilities.',

@@ -1,5 +1,8 @@
 "use client";
 
+// 添加这一行来启用动态渲染
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";

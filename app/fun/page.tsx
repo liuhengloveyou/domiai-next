@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+// 添加这一行来启用动态渲染
+export const dynamic = 'force-dynamic';
+
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { NavBar } from "@/components/nav-bar";

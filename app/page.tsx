@@ -10,6 +10,9 @@ import { useLanguage } from "@/lib/i18n/language-context";
 import { NavBar } from "@/components/nav-bar";
 // import { RequireAuth } from "@/components/require-auth";
 
+// 添加这一行来启用动态渲染
+// export const dynamic = 'force-dynamic';
+
 export default function LandingPage() {
   const { t } = useLanguage();
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0);

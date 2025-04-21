@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 
+// 添加这一行来启用动态渲染
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'AI Voice Cloning - Professional Voice Replication & Customization Service',
   description: 'Clone and customize your voice using advanced AI technology. Support for multiple languages including English, Chinese, Japanese, and Korean. Features real-time preview and personalization options. Perfect for voiceovers, education, and podcasting.',

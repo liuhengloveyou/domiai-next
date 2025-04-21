@@ -1,5 +1,8 @@
 "use client";
 
+// 添加这一行来启用动态渲染
+export const dynamic = 'force-dynamic';
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

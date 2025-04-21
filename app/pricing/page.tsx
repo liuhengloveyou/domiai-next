@@ -569,5 +569,4 @@ export default function PricingPage() {
         onClose={() => setShowAuthDialog(false)} 
       />
     </div>
-  );
-} 
+  );} 

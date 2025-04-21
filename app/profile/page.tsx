@@ -1,5 +1,8 @@
 'use client';
 
+// 添加这一行来启用动态渲染
+export const dynamic = 'force-dynamic';
+
 import { NavBar } from "@/components/nav-bar";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
