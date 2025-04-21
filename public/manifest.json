@@ -1,0 +1,36 @@
+{
+  "name": "VoiceCanvas",
+  "short_name": "VoiceCanvas",
+  "description": "Advanced AI-Powered Multilingual Voice Synthesis Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "categories": ["utilities", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Home Page"
+    }
+  ]
+} 
