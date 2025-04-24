@@ -1,0 +1,13 @@
+{
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/demo/page": "app/demo/page.js",
+  "/pricing/page": "app/pricing/page.js",
+  "/cloning/page": "app/cloning/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/fun/page": "app/fun/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/app/page": "app/app/page.js"
+}

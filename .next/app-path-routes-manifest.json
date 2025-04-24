@@ -1,0 +1,13 @@
+{
+  "/favicon.ico/route": "/favicon.ico",
+  "/_not-found/page": "/_not-found",
+  "/page": "/",
+  "/auth/login/page": "/auth/login",
+  "/demo/page": "/demo",
+  "/pricing/page": "/pricing",
+  "/cloning/page": "/cloning",
+  "/dashboard/page": "/dashboard",
+  "/fun/page": "/fun",
+  "/profile/page": "/profile",
+  "/app/page": "/app"
+}

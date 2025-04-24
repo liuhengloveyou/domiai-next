@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { NavBar } from "@/components/nav-bar";
 import * as fabric from "fabric";
-import { FerrisWheel, ImageUp } from "lucide-react";
+import { FerrisWheel, ImageUp, Move } from "lucide-react";
 import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -30,12 +30,17 @@ export default function FunPage() {
   const [backgroundUrl, setBackgroundUrl] = useState("https://picsum.photos/1920/1080");
   // 动画
   const [drawingMode, setDrawingMode] = useState<string>("select");
-  const [pathObj, setPathObj] = useState<fabric.Path | null>(null);
+  // const [setPathObjs] = useState<fabric.Path[]>([]);
   const [isAnimating, setIsAnimating] = useState(false);
-  const animationObjRef = useRef<fabric.FabricObject | undefined>(undefined); 
-  const animationRef = useRef<number | null>(null);
-  const [speed, setSpeed] = useState(1); // 新增：速度控制，默认1
+  const animationObjsRef = useRef<Map<fabric.Path, fabric.FabricObject>>(new Map());
+  const animationRefsMap = useRef<Map<fabric.FabricObject, number | null>>(new Map());
+  const currentSelectedObjRef = useRef<fabric.FabricObject | null>(null);
+  const [speed, setSpeed] = useState(1);
   const speedRef = useRef(1);
+  
+  // 添加随机运动状态
+  const [isRandomMoving, setIsRandomMoving] = useState(false);
+  const randomMovingRefsMap = useRef<Map<fabric.FabricObject, number | null>>(new Map());
 
   // 历史记录
   const historyRef = useRef<{
@@ -58,19 +63,87 @@ export default function FunPage() {
       });
       fabricCanvasRef.current = canvas;
 
+      // 添加对象移动事件监听
+      canvas.on('object:moving', function(e) {
+        const movingObj = e.target;
+        if (!movingObj) return;
+        
+        // 检查该对象是否正在动画中
+        // let isAnimating = false;
+        animationRefsMap.current.forEach((animRef, obj) => {
+          if (obj === movingObj) {
+            // isAnimating = true;
+            // 取消该对象的动画
+            if (animRef !== null) {
+              cancelAnimationFrame(animRef);
+              animationRefsMap.current.delete(obj);
+            }
+            
+            // 从动画对象映射中移除
+            animationObjsRef.current.forEach((animObj, path) => {
+              if (animObj === movingObj) {
+                animationObjsRef.current.delete(path);
+              }
+            });
+            
+            // 如果所有动画都结束了，更新状态
+            if (animationRefsMap.current.size === 0) {
+              setIsAnimating(false);
+            }
+          }
+        });
+        
+        // 检查该对象是否正在随机运动中
+        if (randomMovingRefsMap.current.has(movingObj)) {
+          const animRef = randomMovingRefsMap.current.get(movingObj);
+          if (animRef !== null) {
+            cancelAnimationFrame(animRef as number);
+          }
+          randomMovingRefsMap.current.delete(movingObj);
+          
+          // 如果所有随机运动都结束了，更新状态
+          if (randomMovingRefsMap.current.size === 0) {
+            setIsRandomMoving(false);
+          }
+        }
+      });
+
       // 只注册一次路径创建事件
       canvas.on("path:created", function (e: any) {
         e.path.set({
           selectable: false,
           evented: false,
         });
-        setPathObj(e.path);
+        
+        // 修改：将新路径添加到数组中
+        // setPathObjs(prev => [...prev, e.path]);
         setDrawingMode("select");
         canvas.isDrawingMode = false;
-        canvas.add(e.path);
-        console.log("?>>>>>>>>>>>>>>>>>>pathObj", pathObj, animationObjRef.current);
-        if (animationObjRef.current) { // 使用ref而不是state
-          animateAlongPath(e.path);
+        
+        // 使用之前保存的选中对象
+        const savedObj = currentSelectedObjRef.current;
+        
+        if (savedObj) {
+          // 将选中的对象与新路径关联
+          animationObjsRef.current.set(e.path, savedObj);
+          
+          // 立即开始动画
+          animateAlongPath(e.path, savedObj);
+          console.log("使用保存的选中对象开始动画");
+          
+          // 清除保存的对象引用
+          currentSelectedObjRef.current = null;
+        } else {
+          // 尝试获取当前选中的对象（备用方案）
+          const activeObj = canvas.getActiveObject();
+          if (activeObj) {
+            // 将选中的对象与新路径关联
+            animationObjsRef.current.set(e.path, activeObj);
+            // 立即开始动画
+            animateAlongPath(e.path, activeObj);
+          } else {
+            toast.warning("请先选中一个图片");
+          }
         }
       });
 
@@ -225,37 +298,49 @@ export default function FunPage() {
   };
 
   // 停止动画
-  const stopAnimation = () => {
-    toast.info("动画已停止");
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
+  const stopAnimation = () => {    
+    animationRefsMap.current.forEach((animationRef) => {
+      if (animationRef !== null) {
+        cancelAnimationFrame(animationRef);
+      }
+    });
+    
+    animationRefsMap.current.clear();
+    animationObjsRef.current.clear();
+     // 如果所有动画都结束了，更新状态
+     if (animationRefsMap.current.size === 0) {
+      setIsAnimating(false);
     }
-    animationObjRef.current = undefined;
-    setIsAnimating(false);
 
-    //动画结束后清除路径线条和点
+    // 动画结束后清除所有路径线条和点
     if (fabricCanvasRef.current) {
       const canvas = fabricCanvasRef.current;
       canvas.getObjects("path").forEach((obj) => canvas.remove(obj));
-      setPathObj(null);
+      // setPathObjs([]);
       canvas.renderAll();
     }
   };
 
   // 图片沿路径运动
-  const animateAlongPath = (customPathObj?: fabric.Path) => {
-    if (!fabricCanvasRef.current || !(customPathObj || pathObj)) return;
+  const animateAlongPath = (pathObj: fabric.Path, animObj?: fabric.FabricObject) => {
+    if (!fabricCanvasRef.current || !pathObj) return;
     const canvas = fabricCanvasRef.current;
 
-    if (!animationObjRef.current) { // 使用ref替代state
+    // 使用传入的动画对象或从Map中获取
+    const animationObj = animObj || animationObjsRef.current.get(pathObj);
+    
+    if (!animationObj) {
       toast.warning("请选中要运动的图片");
       return;
     }
 
     // 获取路径点
-    const pathData = (customPathObj || pathObj)!.path;
+    const pathData = pathObj.path;
     if (!pathData || pathData.length === 0) return;
+    
+    // 隐藏路径线条，但不删除它
+    pathObj.set({ opacity: 0 });
+    canvas.renderAll();
 
     // 提取路径点
     const points: { x: number; y: number }[] = [];
@@ -338,7 +423,6 @@ export default function FunPage() {
         }
       }
 
-      // === 新增：等距采样，保证动画点均匀分布且紧贴原线 ===
       function getDistance(
         a: { x: number; y: number },
         b: { x: number; y: number }
@@ -369,7 +453,6 @@ export default function FunPage() {
       ) {
         sampledPoints.push(smoothPoints[smoothPoints.length - 1]);
       }
-      // === 采样结束 ===
 
       // 开始动画
       let index = 0;
@@ -377,28 +460,36 @@ export default function FunPage() {
 
       const animate = () => {
         if (index >= sampledPoints.length) {
-          stopAnimation();
+          // 单个动画结束，但不停止所有动画
+          if (animationRefsMap.current.has(animationObj)) {
+            animationRefsMap.current.delete(animationObj);
+          }
+          
+          // 如果所有动画都结束了，才调用stopAnimation
+          if (animationRefsMap.current.size === 0) {
+            stopAnimation();
+          }
           return;
         }
 
         const point = sampledPoints[index];
         // 让图片中心在线条上
-        const animObj = animationObjRef.current!; // 使用ref获取动画对象
-        const imgWidth = animObj.getScaledWidth
-          ? animObj.getScaledWidth()
-          : animObj.width || 0;
-        const imgHeight = animObj.getScaledHeight
-          ? animObj.getScaledHeight()
-          : animObj.height || 0;
-        animObj.set({
+        const imgWidth = animationObj.getScaledWidth
+          ? animationObj.getScaledWidth()
+          : animationObj.width || 0;
+        const imgHeight = animationObj.getScaledHeight
+          ? animationObj.getScaledHeight()
+          : animationObj.height || 0;
+        animationObj.set({
           left: point.x - imgWidth / 2,
           top: point.y - imgHeight / 2,
         });
-        animObj.setCoords();
+        animationObj.setCoords();
         canvas.renderAll();
 
         index += speedRef.current;
-        animationRef.current = requestAnimationFrame(animate);
+        const animRef = requestAnimationFrame(animate);
+        animationRefsMap.current.set(animationObj, animRef);
       };
 
       animate();
@@ -409,38 +500,57 @@ export default function FunPage() {
   const handleModeChange = () => {
     if (!mounted || !fabricCanvasRef.current) return;
     const canvas = fabricCanvasRef.current;
-
-    // 如果正在动画，停止动画
-    if (isAnimating) {
-      stopAnimation();
-      return;
-    }
-
-    // 先检查并保存当前选中的对
-    animationObjRef.current =  canvas.getActiveObject();
-    if (pathObj && animationObjRef.current) {
-      setDrawingMode("select");
-      canvas.isDrawingMode = false;
-      animateAlongPath();
-      return;
-    } 
-
+  
+    // 获取当前选中的对象
+    const activeObj = canvas.getActiveObject();
+  
+    // 如果没有选中对象且正在动画，则停止所有动画
+    // if (!activeObj && isAnimating) {
+    //   stopAnimation();
+    //   return;
+    // }
+  
+    // 如果当前是绘图模式，切换回选择模式
     if (drawingMode === "draw") {
       setDrawingMode("select");
       canvas.isDrawingMode = false;
-      stopAnimation();
       return;
-    } else if (drawingMode === "select") {
+    } 
+    
+    // 如果当前是选择模式，检查是否可以进入绘图模式
+    if (drawingMode === "select") {
       if (canvas.getObjects().length <= 0) {
         toast.warning("请先添加图片");
         return;
       }
      
+      if (!activeObj) {
+        toast.warning("请先选择一个图片");
+        return;
+      }
+      
+      // 检查当前选中的对象是否已经在动画中
+      let isObjAnimating = false;
+      animationRefsMap.current.forEach((_, obj) => {
+        if (obj === activeObj) {
+          isObjAnimating = true;
+        }
+      });
+      
+      if (isObjAnimating) {
+        toast.warning("该图片已经在动画中");
+        return;
+      }
+      
+      // 保存当前选中的对象，以便在路径创建后使用
+      currentSelectedObjRef.current = activeObj;
+      
       setDrawingMode("draw");
       canvas.isDrawingMode = true;
-      toast.warning("请先绘制一条运动路径");
+      toast.warning("请为选中的图片绘制一条运动路径");
     }
   };
+  
 
   // 处理背景图片上传
   const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -461,6 +571,118 @@ export default function FunPage() {
     e.target.value = "";
   };
 
+  
+// 添加随机运动函数
+const startRandomMovement = () => {
+  if (!fabricCanvasRef.current) return;
+  const canvas = fabricCanvasRef.current;
+  
+  // 获取所有图片对象
+  const imgObjects = canvas.getObjects().filter((obj: any) => 
+    obj.type === 'image' && !animationRefsMap.current.has(obj)
+  );
+  
+  if (imgObjects.length === 0) {
+    toast.warning("没有可用的图片进行随机运动");
+    return;
+  }
+  
+  setIsRandomMoving(true);
+  toast.success(`${imgObjects.length}张图片开始随机游荡`);
+  
+  // 为每个图片设置随机参数
+  imgObjects.forEach((obj: any) => {
+    const speedX = (1 + Math.random() * 2) * (Math.random() > 0.5 ? 1 : -1);
+    const speedY = (1 + Math.random() * 2) * (Math.random() > 0.5 ? 1 : -1);
+    
+    obj.vx = speedX;
+    obj.vy = speedY;
+    
+    const randomMove = () => {
+      // 检查对象是否仍在画布中
+      if (!canvas.contains(obj)) {
+        if (randomMovingRefsMap.current.has(obj)) {
+          randomMovingRefsMap.current.delete(obj);
+        }
+        return;
+      }
+      
+      // 当前位置
+      const currentX = obj.left || 0;
+      const currentY = obj.top || 0;
+      
+      // 计算新位置
+      let newX = currentX + obj.vx;
+      let newY = currentY + obj.vy;
+      
+      // 边界检查，如果到达边界则反弹
+      const width = obj.getScaledWidth ? obj.getScaledWidth() : obj.width || 0;
+      const height = obj.getScaledHeight ? obj.getScaledHeight() : obj.height || 0;
+      
+      if (newX < 0) {
+        newX = 0;
+        obj.vx = Math.abs(obj.vx);
+      } else if (newX + width > canvas.width!) {
+        newX = canvas.width! - width;
+        obj.vx = -Math.abs(obj.vx);
+      }
+      
+      if (newY < 0) {
+        newY = 0;
+        obj.vy = Math.abs(obj.vy);
+      } else if (newY + height > canvas.height!) {
+        newY = canvas.height! - height;
+        obj.vy = -Math.abs(obj.vy);
+      }
+      
+      // 随机改变方向（小概率）
+      if (Math.random() < 0.01) {
+        // 确保新的随机方向也有明显的x和y分量
+        obj.vx = (1 + Math.random() * 2) * (Math.random() > 0.5 ? 1 : -1);
+        obj.vy = (1 + Math.random() * 2) * (Math.random() > 0.5 ? 1 : -1);
+      }
+      
+      // 更新对象位置
+      obj.set({
+        left: newX,
+        top: newY
+      });
+      obj.setCoords();
+      
+      // 继续动画
+      const animRef = requestAnimationFrame(randomMove);
+      randomMovingRefsMap.current.set(obj, animRef);
+    };
+    
+    // 开始随机移动
+    const animRef = requestAnimationFrame(randomMove);
+    randomMovingRefsMap.current.set(obj, animRef);
+  });
+};
+
+// 停止随机运动
+const stopRandomMovement = () => {
+  randomMovingRefsMap.current.forEach((animRef) => {
+    if (animRef !== null) {
+      cancelAnimationFrame(animRef);
+    }
+  });
+  
+  randomMovingRefsMap.current.clear();
+  setIsRandomMoving(false);
+  toast.info("随机运动已停止");
+};
+
+// 处理随机运动按钮点击
+const handleRandomMovement = () => {
+  if (isRandomMoving) {
+    stopRandomMovement();
+  } else {
+    startRandomMovement();
+  }
+};
+
+  
   return (
     <div
       className="min-h-screen"
@@ -489,18 +711,30 @@ export default function FunPage() {
                 <Button
                   variant="default"
                   size="icon"
-                  className={`${
-                    isAnimating || drawingMode === "draw"
-                      ? "bg-gradient-to-r from-pink-500 via-orange-500 to-fuchsia-500"
-                      : ""
-                  }`}
+                  className="bg-gradient-to-r from-pink-500 via-orange-500 to-fuchsia-500"
                   onClick={() => handleModeChange()}
                 >
                   <FerrisWheel />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isAnimating ? "停止动画" : drawingMode === "draw" ? "退出绘图模式" : "开始动画"}</p>
+                <p>{drawingMode === "draw" ? "退出绘图模式" : "开始动画"}</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="default"
+                  size="icon"
+                  className={isRandomMoving ? "bg-red-500" : "bg-blue-500"}
+                  onClick={handleRandomMovement}
+                >
+                  <Move />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isRandomMoving ? "停止随机运动" : "开始随机运动"}</p>
               </TooltipContent>
             </Tooltip>
 
