@@ -111,7 +111,7 @@ export function NavBar() {
               </span>
               <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500 transition-all duration-300 group-hover:w-full"></div>
             </Link>
-            <Link href="/app" className="text-base font-bold relative group" >
+            {/* <Link href="/app" className="text-base font-bold relative group" >
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500">
                 {t('workspace')}
               </span>
@@ -134,7 +134,7 @@ export function NavBar() {
                 {t('pricing')}
               </span>
               <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500 transition-all duration-300 group-hover:w-full"></div>
-            </Link>
+            </Link> */}
           </div>
 
           <div className="flex items-center gap-1 md:gap-2">

@@ -1,6 +1,6 @@
-# pnpm run build
+pnpm run build
 
-scp -r .next package.json next.config.js public/* ubuntu@111.231.11.139:/opt/domiai.net/domiai-next/
+scp -r .next out package.json next.config.ts public/* ubuntu@111.231.11.139:/opt/domiai.net/domiai-next/
 
 # pnpm install --production
 # pnpm run start
