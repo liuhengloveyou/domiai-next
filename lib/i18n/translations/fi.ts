@@ -95,6 +95,7 @@ export const fi: TranslationType = {
   loginToUseFeature: "Kirjaudu sisään käyttääksesi tätä toimintoa",
   password: "Salasana",
   confirmPassword: "Vahvista Salasana",
+  cellphone: "Puhelinnumero",
   loading: "Ladataan...",
   loginSuccess: "Kirjautuminen Onnistui",
   registerSuccess: "Rekisteröityminen Onnistui",

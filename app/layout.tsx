@@ -5,7 +5,7 @@ import "@radix-ui/themes/styles.css";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
-import { getServerSession } from "next-auth";
+// import { useSession } from "next-auth/react"
 // import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
 // import { GoogleAnalytics } from "@/components/google-analytics";
@@ -302,12 +302,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession();
+  const  session  = {};
 
   return (
     <html lang="en">

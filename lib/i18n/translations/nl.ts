@@ -95,6 +95,7 @@ export const nl: TranslationType = {
   loginToUseFeature: "Log in om deze functie te gebruiken. Het duurt maar even!",
   password: "Wachtwoord",
   confirmPassword: "Bevestig Wachtwoord",
+  cellphone: "Telefoonnummer",
   loading: "Laden...",
   loginSuccess: "Succesvol Ingelogd",
   registerSuccess: "Registratie Voltooid",

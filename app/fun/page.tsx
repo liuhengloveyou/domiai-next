@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { NavBar } from "@/components/nav-bar";
 import * as fabric from "fabric";
-import { FerrisWheel, Move } from "lucide-react";
+import { FerrisWheel, Move, Maximize, Minimize } from "lucide-react";
 import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -46,6 +46,9 @@ export default function FunPage() {
   const randomMovingRefsMap = useRef<Map<fabric.FabricObject, number | null>>(
     new Map()
   );
+
+  // 全屏
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 历史记录
   const historyRef = useRef<{
@@ -733,13 +736,37 @@ export default function FunPage() {
       });
   };
 
+  // 添加全屏切换功能
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+      }).catch(err => {
+        console.error(`全屏切换错误: ${err.message}`);
+        toast.error("无法进入全屏模式");
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().then(() => {
+          setIsFullscreen(false);
+        }).catch(err => {
+          console.error(`退出全屏错误: ${err.message}`);
+          toast.error("无法退出全屏模式");
+        });
+      }
+    }
+  };
+
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen w-full"
       style={{
         backgroundImage: `url(${backgroundUrl})`,
-        backgroundSize: "cover",
+        backgroundSize: "100% 100%", // 改为 100% 100% 而不是 cover
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        height: "100vh",
+        width: "100vw",
       }}
     >
       <NavBar />
@@ -863,6 +890,21 @@ export default function FunPage() {
                 <p>更换背景</p>
               </TooltipContent>
             </Tooltip> */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleFullscreen}
+                  className="bg-white/80 backdrop-blur-sm"
+                >
+                  {isFullscreen ? <Minimize /> : <Maximize />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isFullscreen ? "退出全屏" : "全屏显示"}</p>
+              </TooltipContent>
+            </Tooltip>
           </TooltipProvider>
 
           <FunStore

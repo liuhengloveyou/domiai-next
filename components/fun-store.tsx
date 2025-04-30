@@ -19,6 +19,8 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
+// import { useSession } from "next-auth/react"; // 添加这一行导入useSession
 
 interface StoreImg {
   id: number;
@@ -36,6 +38,10 @@ export function FunStore({
   onAddToCanvas?: (imagePath: string) => void;
   onChangeBackground?: (imagePath: string) => void;
 }) {
+  // 获取用户会话状态
+  // const { data: session, status } = useSession();
+  const isLoggedIn = status === "authenticated";
+  
   // 上传图片
   const fileInputRef = useRef<HTMLInputElement>(null);
   // 上传背景图片
@@ -81,14 +87,16 @@ export function FunStore({
     e: React.ChangeEvent<HTMLInputElement>,
     type: "img" | "bg" = "img"
   ) => {
-    if (!e.target.files || !e.target.files[0]) return;
+    if (!e.target.files || e.target.files.length === 0) return;
 
-    const file = e.target.files[0];
-    const reader = new FileReader();
+    const files = Array.from(e.target.files);
+    let uploadedCount = 0;
+    let failedCount = 0;
 
-    reader.onload = async (event) => {
-      if (!event.target?.result) return;
+    toast.info(`开始上传 ${files.length} 个文件...`);
 
+    // 处理每个文件
+    files.forEach(async (file) => {
       try {
         // 创建FormData对象
         const formData = new FormData();
@@ -102,26 +110,40 @@ export function FunStore({
         });
 
         if (!response.ok) {
-          toast.error("上传失败");
+          failedCount++;
           return;
         }
 
         const result = await response.json();
         if (result.code !== 0) {
-          toast.error(result.msg);
+          failedCount++;
           return;
         }
 
-        toast.success(type === "img" ? "图片上传成功" : "背景图上传成功");
-        // 刷新图片列表
-        await fetchImageList();
+        uploadedCount++;
+
+        // 所有文件处理完成后显示结果并刷新列表
+        if (uploadedCount + failedCount === files.length) {
+          if (failedCount > 0) {
+            toast.warning(
+              `上传完成：${uploadedCount} 个成功，${failedCount} 个失败`
+            );
+          } else {
+            toast.success(
+              `成功上传 ${uploadedCount} 个${
+                type === "img" ? "图片" : "背景图"
+              }`
+            );
+          }
+          // 刷新图片列表
+          await fetchImageList();
+        }
       } catch (error) {
         console.error("上传出错:", error);
-        // 这里可以添加错误处理逻辑，比如显示错误提示
+        failedCount++;
       }
-    };
+    });
 
-    reader.readAsDataURL(file);
     // 重置input，允许重复上传相同文件
     e.target.value = "";
   };
@@ -162,6 +184,40 @@ export function FunStore({
     }
   };
 
+  // 删除图片功能
+  const handleDeleteImage = async (image: StoreImg) => {
+    try {
+      if (!confirm("确定要删除这张图片吗？")) {
+        return;
+      }
+      
+      const response = await fetch("/api/draw/img/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: image.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("删除图片失败");
+      }
+
+      const data = await response.json();
+      
+      if (data.code === 0) {
+        toast.success("图片已删除");
+        // 刷新图片列表
+        await fetchImageList();
+      } else {
+        toast.error(data.msg || "删除失败");
+      }
+    } catch (error) {
+      console.error("删除图片出错:", error);
+      toast.error("删除图片失败");
+    }
+  };
+
   return (
     <Drawer direction="right" open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
@@ -192,35 +248,45 @@ export function FunStore({
             </TabsList>
             <TabsContent value="pic">
               <Card className="border-0 shadow-none rounded-none">
-                <CardContent>
+                <CardContent className="px-2">
                   {loading ? (
                     <div className="text-center py-4">加载中...</div>
                   ) : imageList.filter((img) => img.use === "img").length >
                     0 ? (
-                    <div className="grid grid-cols-3 gap-0">
-                      {imageList
-                        .filter((img) => img.use === "img")
-                        .map((image, index) => (
-                          <ContextMenu key={index}>
-                            <ContextMenuTrigger>
-                              <div className="border rounded-md p-1 hover:border-primary cursor-pointer">
-                                <img
-                                  src={"/tmpimgs" + image.path}
-                                  alt={image.name || `图片${index}`}
-                                  className="w-full h-24 object-cover rounded"
-                                />
-                              </div>
-                            </ContextMenuTrigger>
-                            <ContextMenuContent>
-                              <ContextMenuItem
-                                onClick={() => handleAddToCanvas(image)}
-                              >
-                                添加到画板
-                              </ContextMenuItem>
-                            </ContextMenuContent>
-                          </ContextMenu>
-                        ))}
-                    </div>
+                    <ScrollArea className="h-[calc(100vh-200px)] w-full rounded-none">
+                      <div className="grid grid-cols-3 gap-0">
+                        {imageList
+                          .filter((img) => img.use === "img")
+                          .map((image, index) => (
+                            <ContextMenu key={index}>
+                              <ContextMenuTrigger>
+                                <div className="border rounded-md p-1 hover:border-primary cursor-pointer">
+                                  <img
+                                    src={"/tmpimgs" + image.path}
+                                    alt={image.name || `图片${index}`}
+                                    className="w-full h-24 object-cover rounded"
+                                  />
+                                </div>
+                              </ContextMenuTrigger>
+                              <ContextMenuContent>
+                                <ContextMenuItem
+                                  onClick={() => handleAddToCanvas(image)}
+                                >
+                                  添加到画板
+                                </ContextMenuItem>
+                                {isLoggedIn && (
+                                  <ContextMenuItem
+                                    onClick={() => handleDeleteImage(image)}
+                                    className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                                  >
+                                    删除图片
+                                  </ContextMenuItem>
+                                )}
+                              </ContextMenuContent>
+                            </ContextMenu>
+                          ))}
+                      </div>
+                    </ScrollArea>
                   ) : (
                     <div className="text-center py-4">暂无图片</div>
                   )}
@@ -239,6 +305,7 @@ export function FunStore({
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={(e) => handleFileUpload(e, "img")}
                     className="hidden"
                   />
@@ -247,10 +314,11 @@ export function FunStore({
             </TabsContent>
             <TabsContent value="bg">
               <Card className="border-0 shadow-none">
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-2 px-2">
                   {loading ? (
                     <div className="text-center py-4">加载中...</div>
                   ) : imageList.filter((img) => img.use === "bg").length > 0 ? (
+                    <ScrollArea className="h-[calc(100vh-200px)] w-full rounded-none">
                     <div className="grid grid-cols-2 gap-0">
                       {imageList
                         .filter((img) => img.use === "bg")
@@ -271,10 +339,19 @@ export function FunStore({
                               >
                                 切换背景图
                               </ContextMenuItem>
+                              {isLoggedIn && (
+                                <ContextMenuItem
+                                  onClick={() => handleDeleteImage(image)}
+                                  className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                                >
+                                  删除图片
+                                </ContextMenuItem>
+                              )}
                             </ContextMenuContent>
                           </ContextMenu>
                         ))}
                     </div>
+                    </ScrollArea>
                   ) : (
                     <div className="text-center py-4">暂无背景图</div>
                   )}
@@ -292,6 +369,7 @@ export function FunStore({
                     ref={bgFileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={(e) => handleFileUpload(e, "bg")}
                     className="hidden"
                   />

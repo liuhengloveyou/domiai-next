@@ -95,6 +95,7 @@ export const hu: TranslationType = {
   loginToUseFeature: "Kérjük, jelentkezzen be a funkció használatához",
   password: "Jelszó",
   confirmPassword: "Jelszó Múeggerősítése",
+  cellphone: "Telefonszám",
   loading: "Betöltés...",
   loginSuccess: "Sikeres Bejelentkezés",
   registerSuccess: "Sikeres Regisztráció",

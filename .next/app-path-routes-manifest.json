@@ -1,13 +1,17 @@
 {
+  "/apple-icon.png/route": "/apple-icon.png",
+  "/manifest.json/route": "/manifest.json",
+  "/icon1.png/route": "/icon1.png",
+  "/icon0.svg/route": "/icon0.svg",
   "/favicon.ico/route": "/favicon.ico",
   "/_not-found/page": "/_not-found",
   "/page": "/",
   "/auth/login/page": "/auth/login",
-  "/cloning/page": "/cloning",
   "/demo/page": "/demo",
+  "/cloning/page": "/cloning",
   "/pricing/page": "/pricing",
   "/dashboard/page": "/dashboard",
   "/fun/page": "/fun",
-  "/profile/page": "/profile",
-  "/app/page": "/app"
+  "/app/page": "/app",
+  "/profile/page": "/profile"
 }

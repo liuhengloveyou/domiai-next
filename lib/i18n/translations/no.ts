@@ -95,6 +95,7 @@ export const no: TranslationType = {
   loginToUseFeature: "Vennligst logg inn for å bruke denne funksjonen",
   password: "Passord",
   confirmPassword: "Bekreft passord",
+  cellphone: "Telefon",
   loading: "Laster...",
   loginSuccess: "Innlogging vellykket",
   registerSuccess: "Registrering vellykket",

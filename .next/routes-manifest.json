@@ -34,6 +34,12 @@
       "namedRegex": "^/app(?:/)?$"
     },
     {
+      "page": "/apple-icon.png",
+      "regex": "^/apple\\-icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apple\\-icon\\.png(?:/)?$"
+    },
+    {
       "page": "/auth/login",
       "regex": "^/auth/login(?:/)?$",
       "routeKeys": {},
@@ -68,6 +74,24 @@
       "regex": "^/fun(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/fun(?:/)?$"
+    },
+    {
+      "page": "/icon0.svg",
+      "regex": "^/icon0\\.svg(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/icon0\\.svg(?:/)?$"
+    },
+    {
+      "page": "/icon1.png",
+      "regex": "^/icon1\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/icon1\\.png(?:/)?$"
+    },
+    {
+      "page": "/manifest.json",
+      "regex": "^/manifest\\.json(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/manifest\\.json(?:/)?$"
     },
     {
       "page": "/pricing",

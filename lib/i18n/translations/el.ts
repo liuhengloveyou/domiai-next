@@ -95,6 +95,7 @@ export const el: TranslationType = {
   loginToUseFeature: "Συνδεθείτε για πρόσβαση σε αυτήν τη λειτουργία",
   password: "Κωδικός",
   confirmPassword: "Επιβεβαίωση Κωδικού",
+  cellphone: "Τηλέφωνο",
   loading: "Φόρτωση...",
   loginSuccess: "Επιτυχής Σύνδεση",
   registerSuccess: "Επιτυχής Εγγραφή",

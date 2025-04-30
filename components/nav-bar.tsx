@@ -67,16 +67,16 @@ export function NavBar() {
   if (!mounted) {
     return (
       <div className="border-b">
-        <div className="container mx-auto px-4 h-16" />
+        <div className="container mx-auto px-4 h-10" />
       </div>
     );
   }
 
   return (
-    
+
     <div className="bg-background/70 backdrop-blur-sm supports-[backdrop-filter]:bg-background/70 sticky top-0 z-40 w-full">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-10 items-center justify-between">
           <div className="flex items-center gap-4 md:gap-8">
             {/* {showBackButton && (
               <Link href="/" className="hidden md:flex items-center text-sm" >
@@ -139,7 +139,7 @@ export function NavBar() {
 
           <div className="flex items-center gap-1 md:gap-2">
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-[90px] md:w-[120px] h-8 md:h-10 text-xs md:text-sm border-primary/10 bg-background/60 backdrop-blur focus:ring-0 focus:ring-offset-0 shadow-none">
+              <SelectTrigger className="w-[90px] md:w-[120px] h-8 text-xs md:text-sm border-primary/10 bg-background/60 backdrop-blur focus:ring-0 focus:ring-offset-0 shadow-none">
                 <Globe className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                 <SelectValue>
                   {LANGUAGE_NAMES[language as keyof typeof LANGUAGE_NAMES]}
@@ -186,7 +186,7 @@ export function NavBar() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 md:h-10 md:w-10"
+              className="h-8 w-8 md:w-10"
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
             >
               {theme === "light" ? <Moon className="h-4 w-4 md:h-5 md:w-5" /> : <Sun className="h-4 w-4 md:h-5 md:w-5" />}
@@ -199,7 +199,7 @@ export function NavBar() {
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className="h-8 md:h-10 px-1 md:px-2 flex items-center gap-2 group relative"
+                    className="h-8 px-1 md:px-2 flex items-center gap-2 group relative"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300" />
                     <Avatar className="h-6 w-6 md:h-8 md:w-8 ring-2 ring-offset-2 ring-offset-background ring-primary/10 group-hover:ring-primary/30 transition-all duration-300">
@@ -209,7 +209,7 @@ export function NavBar() {
                       </AvatarFallback>
                     </Avatar>
                     <span className="hidden md:inline-block text-sm font-medium bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500 group-hover:opacity-80 transition-opacity duration-300">
-                      {session.user.name || session.user.email}
+                      {session.user.name}
                     </span>
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-lg opacity-0 group-hover:opacity-100 transition-all duration-300 -z-10" />
                   </Button>
@@ -244,26 +244,26 @@ export function NavBar() {
               </DropdownMenu>
             ) : (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAuthDialog(true)}
-                  className="text-xs md:text-sm px-2 md:px-4 h-8 md:h-10"
-                >
-                  {t('login')}
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setShowAuthDialog(true);
-                    const event = new CustomEvent('switch-to-register');
-                    document.dispatchEvent(event);
-                  }}
-                  className="text-xs md:text-sm px-2 md:px-4 h-8 md:h-10 bg-gradient-to-r from-orange-500 via-pink-500 to-fuchsia-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 transition-all duration-300"
-                >
-                  {t('register')}
-                </Button>
-              </>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAuthDialog(true)}
+                className="text-xs md:text-sm px-2 md:px-4 h-8 "
+              >
+                {t('login')}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setShowAuthDialog(true);
+                  const event = new CustomEvent('switch-to-register');
+                  document.dispatchEvent(event);
+                }}
+                className="text-xs md:text-sm px-2 md:px-4 h-8  bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 transition-all duration-300"
+              >
+                {t('register')}
+              </Button>
+            </>
             )}
           </div>
         </div>

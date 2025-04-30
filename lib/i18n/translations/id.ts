@@ -95,6 +95,7 @@ export const id: TranslationType = {
   loginToUseFeature: "Silakan masuk untuk mengakses fitur ini",
   password: "Kata Sandi",
   confirmPassword: "Konfirmasi Kata Sandi",
+  cellphone: "Nomor Telepon",
   loading: "Memuat...",
   loginSuccess: "Berhasil Masuk",
   registerSuccess: "Pendaftaran Berhasil",

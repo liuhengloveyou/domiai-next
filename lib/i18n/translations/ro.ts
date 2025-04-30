@@ -95,6 +95,7 @@ export const ro: TranslationType = {
   loginToUseFeature: "Autentifică-te pentru a accesa această funcție",
   password: "Parolă",
   confirmPassword: "Confirmă Parola",
+  cellphone: "Telefon",
   loading: "Se încarcă...",
   loginSuccess: "Autentificare Reușită",
   registerSuccess: "Înregistrare Reușită",
@@ -375,7 +376,7 @@ export const ro: TranslationType = {
   
     // Întrebări frecvente
     faqCloneVoice: "Cum funcționează clonarea vocală?",
-    faqCloneVoiceAnswer: "AI creează o copie digitală a vocii. Recomandări: 1) Folosiți microfon de calitate 2) Clonările nu expiră 3) Suportă text în multiple limbi 4) Calitatea depinde de înregistrare 5) Ideal pentru crearea de conținut",
+    faqCloneVoiceAnswer: "AI creează o copie digitală a vocii. Recomandări: 1) Folosițu microfon de calitate 2) Clonările nu expiră 3) Suportă text în multiple limbi 4) Calitatea depinde de înregistrare 5) Ideal pentru crearea de conținut",
   
     // Pagina de clonare
     voiceCloning: "Clonare vocală",
@@ -424,7 +425,7 @@ export const ro: TranslationType = {
     instruction3: "3. Citiți text fără zgomot ambiental",
     instruction4: "4. Mărime maximă 20MB",
     instruction5: "5. Primire ID voce după clonare",
-    instruction6: "6. Folosiți ID-ul pentru generare audio",
+    instruction6: "6. Folosițu ID-ul pentru generare audio",
     legalNotice: "Declarație legală: Asigurați-vă drepturile de utilizare. Clonarea neautorizată este interzisă. Doar uz personal.",
   
     // API

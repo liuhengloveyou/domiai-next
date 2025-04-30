@@ -86,6 +86,7 @@ export const zh: TranslationType = {
   basicInfo: "基本信息",
   username: "用户名",
   email: "电子邮箱",
+  cellphone: "手机号码",
   registrationTime: "注册时间",
   loginMethod: "登录方式",
   notSet: "未设置",

@@ -306,7 +306,7 @@ export default function ProfilePage() {
                     <Mail className="h-4 w-4 text-purple-400 group-hover/item:text-purple-500 transition-colors" />
                     <span className="text-muted-foreground group-hover/item:text-primary transition-colors">{t('email')}</span>
                   </div>
-                  <span className="font-medium">{user.email || t('notSet')}</span>
+                  <span className="font-medium">{t('notSet')}</span>
                 </div>
               </CardContent>
             </Card>

@@ -24,11 +24,27 @@ interface AuthDialogProps {
   onClose: () => void;
 }
 
+import { z } from "zod";
+
+export const SignupFormSchema = z.object({
+  cellphone: z
+    .string()
+    .regex(/^1[3-9]\d{9}$/, { message: "请输入有效的手机号码" })
+    .trim(),
+  password: z
+    .string()
+    .min(6, { message: "密码长度至少为8个字符" })
+    // .regex(/[a-zA-Z]/, { message: "密码需包含至少一个字母" })
+    // .regex(/[0-9]/, { message: "密码需包含至少一个数字" })
+    // .regex(/[^a-zA-Z0-9]/, {
+    //   message: "密码需包含至少一个特殊字符",
+    // })
+    .trim(),
+});
+
 export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGithubLoading, setIsGithubLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -52,6 +68,64 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
     }
   }, [isOpen]);
 
+  // 登录逻辑
+  const handleLogin = async (cellphone: string, password: string) => {
+    const result = await signIn("credentials", {
+      redirect: false,
+      cellphone,
+      password,
+    });
+
+    if (result?.error) {
+      throw new Error(result.error);
+    }
+
+    toast(t("welcomeBack"));
+
+    onClose();
+  };
+
+  // 注册逻辑
+  const handleRegister = async (cellphone: string, password: string) => {
+    const response = await fetch("/usercenter", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API": "user/register",
+      },
+      body: JSON.stringify({
+        cellphone,
+        password,
+      }),
+    });
+
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(responseData.error || t("registerError"));
+    }
+
+    console.log(responseData);
+    if (responseData.code !== 0) {
+      toast(responseData.msg);
+      return;
+    }
+
+    // 注册成功后自动登录
+    const loginResult = await signIn("credentials", {
+      redirect: false,
+      cellphone,
+      password,
+    });
+
+    if (loginResult?.error) {
+      throw new Error(loginResult.error);
+    }
+
+    toast(t("welcomeBack"));
+
+    onClose();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -59,7 +133,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
     try {
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
-      const email = formData.get("email") as string;
+      const cellphone = formData.get("cellphone") as string;
       const password = formData.get("password") as string;
       const confirmPassword = formData.get("confirmPassword") as string;
 
@@ -68,81 +142,34 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
         return;
       }
 
+      // Validate form fields
+      const validatedFields = SignupFormSchema.safeParse({
+        cellphone: cellphone,
+        password: password,
+      });
+
+      // If any form fields are invalid, return early
+      if (!validatedFields.success) {
+        const errors = validatedFields.error.flatten().fieldErrors;
+        if (errors.cellphone) {
+          toast.error(errors.cellphone[0]);
+        } else if (errors.password) {
+          toast.error(errors.password[0]);
+        }
+        setIsLoading(false);
+        return;
+      }
+
       if (isLogin) {
-        // 登录逻辑
-        const result = await signIn("credentials", {
-          redirect: false,
-          email,
-          password,
-        });
-
-        if (result?.error) {
-          throw new Error(result.error);
-        }
-
-        toast(t("welcomeBack"));
-
-        onClose();
+        handleLogin(cellphone, password);
       } else {
-        // 注册逻辑
-        const response = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || t("registerError"));
-        }
-
-        // 注册成功后自动登录
-        const loginResult = await signIn("credentials", {
-          redirect: false,
-          email,
-          password,
-        });
-
-        if (loginResult?.error) {
-          throw new Error(loginResult.error);
-        }
-
-        toast(t("welcomeBack"));
-
-        onClose();
+        handleRegister(cellphone, password);
       }
     } catch (error: any) {
       console.error("认证错误:", error);
       toast(error.message || t("authError"));
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleGithubLogin = async () => {
-    try {
-      setIsGithubLoading(true);
-      await signIn("github", { callbackUrl: window.location.href });
-    } catch (error) {
-      toast(t("authError"));
-    } finally {
-      setIsGithubLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      setIsGoogleLoading(true);
-      await signIn("google", { callbackUrl: window.location.href });
-    } catch (error) {
-      toast( t("authError"));
-    } finally {
-      setIsGoogleLoading(false);
     }
   };
 
@@ -158,55 +185,12 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full relative"
-              onClick={handleGithubLogin}
-              disabled={isGithubLoading || isGoogleLoading || isLoading}
-            >
-              {isGithubLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Github className="mr-2 h-4 w-4" />
-              )}
-              {t("githubLogin")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full relative"
-              onClick={handleGoogleLogin}
-              disabled={isGithubLoading || isGoogleLoading || isLoading}
-            >
-              {isGoogleLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Chrome className="mr-2 h-4 w-4" />
-              )}
-              {t("googleLogin")}
-            </Button>
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                {t("dividerText")}
-              </span>
-            </div>
-          </div>
-
           <div className="space-y-2">
-            <Label htmlFor="email">{t("email")}</Label>
+            <Label htmlFor="cellphone">{t("cellphone")}</Label>
             <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="example@email.com"
+              id="cellphone"
+              name="cellphone"
+              type="cellphone"
               required
               disabled={isLoading}
             />

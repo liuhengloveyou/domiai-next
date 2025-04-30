@@ -87,6 +87,7 @@ export const en: TranslationType = {
   basicInfo: "Basic Information",
   username: "Username",
   email: "Email",
+  cellphone: "Cellphone",
   registrationTime: "Registration Time",
   loginMethod: "Login Method",
   notSet: "Not Set",

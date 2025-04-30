@@ -95,6 +95,7 @@ export const it: TranslationType = {
   loginToUseFeature: "Accedi per usare questa funzione. Bastano pochi secondi!",
   password: "Password",
   confirmPassword: "Conferma Password",
+  cellphone: "Telefono",
   loading: "Caricamento...",
   loginSuccess: "Accesso Riuscito",
   registerSuccess: "Registrazione Riuscita",
